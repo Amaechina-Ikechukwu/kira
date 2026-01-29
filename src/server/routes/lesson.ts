@@ -6,7 +6,7 @@ import { sendLessonInviteEmail } from '../services/email';
 
 const router = Router();
 
-// In-memory session store for mock mode (no database required)
+// In-memory session store (no database required)
 interface SessionData {
   id: string;
   email: string;
@@ -17,24 +17,7 @@ interface SessionData {
   createdAt: Date;
 }
 
-const mockSessionStore = new Map<string, SessionData>();
-
-// Conditionally import database (only if not in mock mode)
-let db: any = null;
-let schema: any = null;
-let eq: any = null;
-
-const isMockMode = process.env.MOCK_MODE === 'true';
-
-if (!isMockMode) {
-  import('../db').then((dbModule) => {
-    db = dbModule.db;
-    schema = dbModule.schema;
-  });
-  import('drizzle-orm').then((drizzleModule) => {
-    eq = drizzleModule.eq;
-  });
-}
+const sessionStore = new Map<string, SessionData>();
 
 // Send lesson invite email to student (email-only, no studentId)
 router.post('/invite', async (req: Request, res: Response) => {
@@ -66,32 +49,17 @@ router.post('/invite', async (req: Request, res: Response) => {
       });
     }
 
-    // Store session
-    if (isMockMode) {
-      mockSessionStore.set(sessionId, {
-        id: sessionId,
-        email,
-        currentStage: 1,
-        lessonPlan,
-        personalityTone,
-        isChallenge,
-        createdAt: new Date(),
-      });
-      console.log(`[Mock] Session ${sessionId} stored in memory`);
-    } else {
-      await db.insert(schema.sessions).values({
-        id: sessionId,
-        studentId: email, // Using email as identifier
-        currentStage: 1,
-        lessonPlan: lessonPlan as unknown as Record<string, unknown>,
-        // We don't really have "failedQuestions" in the DB schema same way anymore, 
-        // but we can store the attempts or just an empty array if strictly typed.
-        // For now, let's assume valid attempts = failed for DB purposes or just ignore.
-        failedQuestions: [] as unknown as Record<string, unknown>[], 
-        personalityTone,
-        isChallenge,
-      });
-    }
+    // Store session in memory
+    sessionStore.set(sessionId, {
+      id: sessionId,
+      email,
+      currentStage: 1,
+      lessonPlan,
+      personalityTone,
+      isChallenge,
+      createdAt: new Date(),
+    });
+    console.log(`[Session] ${sessionId} stored in memory`);
 
     // Use name from Sheet (most accurate), then fallback to webhook, then email
     const recipientName = quizData.studentName || studentName || email.split('@')[0];
@@ -138,28 +106,17 @@ router.post('/start', async (req: Request, res: Response) => {
 
     const { lessonPlan, isChallenge } = await generateLessonPlan(quizData.attempts, personalityTone, quizData.topic);
 
-    if (isMockMode) {
-      mockSessionStore.set(sessionId, {
-        id: sessionId,
-        email,
-        currentStage: 1,
-        lessonPlan,
-        personalityTone,
-        isChallenge,
-        createdAt: new Date(),
-      });
-      console.log(`[Mock] Session ${sessionId} stored in memory`);
-    } else {
-      await db.insert(schema.sessions).values({
-        id: sessionId,
-        studentId: email,
-        currentStage: 1,
-        lessonPlan: lessonPlan as unknown as Record<string, unknown>,
-        failedQuestions: [] as unknown as Record<string, unknown>[],
-        personalityTone,
-        isChallenge,
-      });
-    }
+    // Store session in memory
+    sessionStore.set(sessionId, {
+      id: sessionId,
+      email,
+      currentStage: 1,
+      lessonPlan,
+      personalityTone,
+      isChallenge,
+      createdAt: new Date(),
+    });
+    console.log(`[Session] ${sessionId} stored in memory`);
 
     const firstStage = lessonPlan.stages[0];
 
@@ -183,26 +140,7 @@ router.get('/:sessionId', async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
 
-    let session: SessionData | null = null;
-
-    if (isMockMode) {
-      session = mockSessionStore.get(sessionId) || null;
-    } else {
-      const dbSession = await db.query.sessions.findFirst({
-        where: eq(schema.sessions.id, sessionId),
-      });
-      if (dbSession) {
-        session = {
-          id: dbSession.id,
-          email: dbSession.studentId,
-          currentStage: dbSession.currentStage,
-          lessonPlan: dbSession.lessonPlan as unknown as GameInterface,
-          personalityTone: dbSession.personalityTone,
-          isChallenge: dbSession.isChallenge, // Ensure your DB schema has this column if needed, or ignore
-          createdAt: dbSession.createdAt,
-        };
-      }
-    }
+    const session = sessionStore.get(sessionId);
 
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
@@ -232,25 +170,7 @@ router.post('/:sessionId/progress', async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
 
-    let session: SessionData | null = null;
-
-    if (isMockMode) {
-      session = mockSessionStore.get(sessionId) || null;
-    } else {
-      const dbSession = await db.query.sessions.findFirst({
-        where: eq(schema.sessions.id, sessionId),
-      });
-      if (dbSession) {
-        session = {
-          id: dbSession.id,
-          email: dbSession.studentId,
-          currentStage: dbSession.currentStage,
-          lessonPlan: dbSession.lessonPlan as unknown as GameInterface,
-          personalityTone: dbSession.personalityTone,
-          createdAt: dbSession.createdAt,
-        };
-      }
-    }
+    const session = sessionStore.get(sessionId);
 
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
@@ -259,17 +179,9 @@ router.post('/:sessionId/progress', async (req: Request, res: Response) => {
     const lessonPlan = session.lessonPlan;
     const nextStage = session.currentStage + 1;
 
-    if (isMockMode) {
-      session.currentStage = nextStage;
-      mockSessionStore.set(sessionId, session);
-    } else {
-      await db.update(schema.sessions)
-        .set({
-          currentStage: nextStage,
-          updatedAt: new Date(),
-        })
-        .where(eq(schema.sessions.id, sessionId));
-    }
+    // Update session in memory
+    session.currentStage = nextStage;
+    sessionStore.set(sessionId, session);
 
     if (nextStage > lessonPlan.stages.length) {
       return res.json({

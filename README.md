@@ -14,7 +14,7 @@ An AI-powered learning companion that creates personalized lessons from quiz res
 - **Backend**: Bun + Express + TypeScript
 - **Frontend**: React + Vite + Tailwind CSS + Framer Motion
 - **AI**: Google Gemini API
-- **Database**: PostgreSQL + Drizzle ORM (optional, has mock mode)
+- **Storage**: In-memory session store
 
 ## Quick Start
 
@@ -35,13 +35,13 @@ bun run dev
 | Variable | Description |
 |----------|-------------|
 | `GEMINI_API_KEY` | Google Gemini API key |
-| `GOOGLE_CLIENT_EMAIL` | Service account email for Sheets API |
-| `GOOGLE_PRIVATE_KEY` | Service account private key |
-| `GOOGLE_SHEET_ID` | Google Sheet ID with quiz responses |
+| `GOOGLE_SHEETS_ID` | Google Sheet ID with quiz responses |
+| `GOOGLE_SERVICE_ACCOUNT_PATH` | Path to service account JSON |
 | `EMAIL_USER` | Email address for sending invites |
-| `EMAIL_PASSWORD` | App-specific password for email |
+| `EMAIL_PASS` | App-specific password for email |
+| `EMAIL_HOST` | SMTP host (e.g., smtp.gmail.com) |
+| `EMAIL_PORT` | SMTP port (e.g., 587) |
 | `BASE_URL` | Public URL for lesson links |
-| `MOCK_MODE` | Set to `true` to skip database |
 
 ## How It Works
 
