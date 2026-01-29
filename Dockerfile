@@ -11,6 +11,9 @@ RUN bun install
 # Copy the rest of the application
 COPY . .
 
+# Build the frontend (Vite)
+RUN bun run build
+
 # Set production environment
 ENV NODE_ENV=production
 ENV PORT=8080
