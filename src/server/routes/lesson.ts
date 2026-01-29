@@ -12,10 +12,22 @@ const router = Router();
 // /explore uses optionalAuth to allow public access from landing page
 // All other routes require authentication
 
-// Send lesson invite email to student (requires auth)
-router.post('/invite', requireAuth, async (req: Request, res: Response) => {
+// Send lesson invite email (webhook from Google Apps Script - uses secret validation)
+router.post('/invite', async (req: Request, res: Response) => {
   try {
-    const { email, studentName, personalityTone = 'Hype Man' } = req.body;
+    const { email, studentName, personalityTone = 'Hype Man', webhookSecret } = req.body;
+
+    // Validate webhook secret
+    const expectedSecret = process.env.WEBHOOK_SECRET;
+    if (!expectedSecret) {
+      console.error('[Invite] WEBHOOK_SECRET not configured');
+      return res.status(500).json({ error: 'Webhook not configured' });
+    }
+
+    if (webhookSecret !== expectedSecret) {
+      console.warn('[Invite] Invalid webhook secret attempt');
+      return res.status(401).json({ error: 'Invalid webhook secret' });
+    }
 
     if (!email) {
       return res.status(400).json({ error: 'email is required' });
