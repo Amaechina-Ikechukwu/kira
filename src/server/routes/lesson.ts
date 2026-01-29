@@ -1,23 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { getStudentQuizData } from '../services/sheets';
-import { generateLessonPlan, type GameInterface } from '../services/gemini';
+import { generateLessonPlan, generateExploratoryLesson } from '../services/gemini';
 import { sendLessonInviteEmail } from '../services/email';
+import { getSession, setSession, updateSession } from '../stores/sessionStore';
 
 const router = Router();
-
-// In-memory session store (no database required)
-interface SessionData {
-  id: string;
-  email: string;
-  currentStage: number;
-  lessonPlan: GameInterface;
-  personalityTone: string;
-  isChallenge?: boolean;
-  createdAt: Date;
-}
-
-const sessionStore = new Map<string, SessionData>();
 
 // Send lesson invite email to student (email-only, no studentId)
 router.post('/invite', async (req: Request, res: Response) => {
@@ -49,8 +37,8 @@ router.post('/invite', async (req: Request, res: Response) => {
       });
     }
 
-    // Store session in memory
-    sessionStore.set(sessionId, {
+    // Store session in database
+    await setSession(sessionId, {
       id: sessionId,
       email,
       currentStage: 1,
@@ -59,7 +47,7 @@ router.post('/invite', async (req: Request, res: Response) => {
       isChallenge,
       createdAt: new Date(),
     });
-    console.log(`[Session] ${sessionId} stored in memory`);
+    console.log(`[Session] ${sessionId} stored in database`);
 
     // Use name from Sheet (most accurate), then fallback to webhook, then email
     const recipientName = quizData.studentName || studentName || email.split('@')[0];
@@ -92,6 +80,52 @@ router.post('/invite', async (req: Request, res: Response) => {
   }
 });
 
+// Explore a topic (no email required - for landing page)
+router.post('/explore', async (req: Request, res: Response) => {
+  try {
+    const { topic, personalityTone = 'Hype Man' } = req.body;
+
+    if (!topic || typeof topic !== 'string' || topic.trim().length === 0) {
+      return res.status(400).json({ error: 'topic is required' });
+    }
+
+    const sessionId = uuidv4();
+    
+    console.log(`[Explore] Generating lesson for topic: "${topic}"`);
+
+    const { lessonPlan } = await generateExploratoryLesson(topic.trim(), personalityTone);
+
+    // Store session in database
+    await setSession(sessionId, {
+      id: sessionId,
+      topic: topic.trim(),
+      currentStage: 1,
+      lessonPlan,
+      personalityTone,
+      createdAt: new Date(),
+    });
+    console.log(`[Session] Explore session ${sessionId} stored in database`);
+
+    const firstStage = lessonPlan.stages[0];
+
+    res.json({
+      sessionId,
+      topic: topic.trim(),
+      currentStage: 1,
+      totalStages: lessonPlan.stages.length,
+      personalityTone: lessonPlan.personalityTone,
+      stage: firstStage,
+    });
+
+  } catch (error) {
+    console.error('[Explore] Error generating lesson:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate lesson',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Create a new lesson session (for direct access, still uses email)
 router.post('/start', async (req: Request, res: Response) => {
   try {
@@ -106,8 +140,8 @@ router.post('/start', async (req: Request, res: Response) => {
 
     const { lessonPlan, isChallenge } = await generateLessonPlan(quizData.attempts, personalityTone, quizData.topic);
 
-    // Store session in memory
-    sessionStore.set(sessionId, {
+    // Store session in database
+    await setSession(sessionId, {
       id: sessionId,
       email,
       currentStage: 1,
@@ -116,7 +150,7 @@ router.post('/start', async (req: Request, res: Response) => {
       isChallenge,
       createdAt: new Date(),
     });
-    console.log(`[Session] ${sessionId} stored in memory`);
+    console.log(`[Session] ${sessionId} stored in database`);
 
     const firstStage = lessonPlan.stages[0];
 
@@ -138,17 +172,26 @@ router.post('/start', async (req: Request, res: Response) => {
 // Get current lesson state
 router.get('/:sessionId', async (req: Request, res: Response) => {
   try {
-    const { sessionId } = req.params;
+    const sessionId = req.params.sessionId as string;
+    console.log(`[Lesson] GET session: ${sessionId}`);
 
-    const session = sessionStore.get(sessionId);
+    const session = await getSession(sessionId);
 
     if (!session) {
+      console.log(`[Lesson] Session not found: ${sessionId}`);
       return res.status(404).json({ error: 'Session not found' });
     }
 
     const lessonPlan = session.lessonPlan;
     const currentStageIndex = session.currentStage - 1;
     const currentStage = lessonPlan.stages[currentStageIndex];
+
+    console.log(`[Lesson] Session found, stage ${session.currentStage}/${lessonPlan.stages.length}`);
+
+    if (!currentStage) {
+      console.error(`[Lesson] Stage not found at index ${currentStageIndex}`);
+      return res.status(500).json({ error: 'Stage not found' });
+    }
 
     res.json({
       sessionId,
@@ -168,9 +211,9 @@ router.get('/:sessionId', async (req: Request, res: Response) => {
 // Advance to next stage
 router.post('/:sessionId/progress', async (req: Request, res: Response) => {
   try {
-    const { sessionId } = req.params;
+    const sessionId = req.params.sessionId as string;
 
-    const session = sessionStore.get(sessionId);
+    const session = await getSession(sessionId);
 
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
@@ -179,9 +222,8 @@ router.post('/:sessionId/progress', async (req: Request, res: Response) => {
     const lessonPlan = session.lessonPlan;
     const nextStage = session.currentStage + 1;
 
-    // Update session in memory
-    session.currentStage = nextStage;
-    sessionStore.set(sessionId, session);
+    // Update session in database
+    await updateSession(sessionId, { currentStage: nextStage });
 
     if (nextStage > lessonPlan.stages.length) {
       return res.json({

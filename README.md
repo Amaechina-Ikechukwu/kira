@@ -1,24 +1,25 @@
 # 🎓 Kira - AI Learning Platform
 
-An AI-powered learning companion that creates personalized lessons from quiz results. Kira teaches concepts first, then quizzes to reinforce understanding.
+An AI-powered learning companion that creates personalized lessons from quiz results and documents. Kira teaches concepts first, then quizzes to reinforce understanding.
 
 ## Features
 
 - 🤖 **AI-Generated Lessons** - Uses Gemini to create personalized teaching content
+- 📄 **Document Support** - Extracts knowledge from PDF files to supplement lessons
 - 📧 **Email Integration** - Sends lesson invites via email
 - 📊 **Google Sheets Integration** - Reads quiz data from Google Forms responses
 - 🎮 **Interactive UI** - Animated mascot, progress tracking, and quizzes
 
 ## Tech Stack
 
-- **Backend**: Bun + Express + TypeScript
+- **Backend**: Bun + Express + TypeScript + Drizzle ORM
 - **Frontend**: React + Vite + Tailwind CSS + Framer Motion
 - **AI**: Google Gemini API
-- **Storage**: In-memory session store
+- **Storage**: PostgreSQL (Cloud SQL) + Cloudinary (Media)
 
 ## Quick Start
 
-```bash
+bash
 # Install dependencies
 bun install
 
@@ -26,9 +27,11 @@ bun install
 cp .env.example .env
 # Edit .env with your API keys
 
+# Push database schema
+bun x drizzle-kit push
+
 # Run development server
 bun run dev
-```
 
 ## Environment Variables
 
@@ -37,6 +40,13 @@ bun run dev
 | `GEMINI_API_KEY` | Google Gemini API key |
 | `GOOGLE_SHEETS_ID` | Google Sheet ID with quiz responses |
 | `GOOGLE_SERVICE_ACCOUNT_PATH` | Path to service account JSON |
+| `POSTGRES_HOST` | PostgreSQL host address |
+| `POSTGRES_USER` | PostgreSQL username |
+| `POSTGRES_PASSWORD` | PostgreSQL password |
+| `POSTGRES_DATABASE` | PostgreSQL database name |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
 | `EMAIL_USER` | Email address for sending invites |
 | `EMAIL_PASS` | App-specific password for email |
 | `EMAIL_HOST` | SMTP host (e.g., smtp.gmail.com) |
@@ -46,7 +56,7 @@ bun run dev
 ## How It Works
 
 1. **Quiz Webhook** → Receives quiz submission data
-2. **Sheets Fetch** → Gets student answers from Google Sheets
+2. **Sheets/Doc Fetch** → Gets student answers and optional PDF context
 3. **AI Generation** → Gemini creates teaching content + quiz questions
 4. **Email Sent** → Student receives lesson link
 5. **Learn & Quiz** → Student learns concepts, then takes quiz

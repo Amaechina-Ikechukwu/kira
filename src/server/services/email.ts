@@ -175,3 +175,65 @@ export async function verifyEmailConnection(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Send magic link email for authentication
+ */
+export async function sendMagicLinkEmail(email: string, magicLink: string): Promise<boolean> {
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in to Kira</title>
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; color: #111827; margin: 0; padding: 0; }
+    .wrapper { width: 100%; background-color: #f9fafb; padding: 40px 0; }
+    .container { max-width: 480px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; }
+    .header { background: #ffffff; padding: 24px 32px; border-bottom: 1px solid #f3f4f6; text-align: center; }
+    .logo { font-size: 24px; font-weight: 800; color: #111827; letter-spacing: -0.5px; margin: 0; }
+    .content { padding: 40px 32px; text-align: center; }
+    .text { font-size: 16px; line-height: 1.6; color: #374151; margin-bottom: 32px; }
+    .btn { display: inline-block; background-color: #7c3aed; color: #ffffff; font-weight: 600; padding: 14px 32px; border-radius: 8px; text-decoration: none; }
+    .footer { background-color: #f9fafb; padding: 24px; text-align: center; font-size: 13px; color: #9ca3af; border-top: 1px solid #e5e7eb; }
+    .link { color: #6b7280; font-size: 12px; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="logo">Kira</h1>
+      </div>
+      <div class="content">
+        <p class="text">Click the button below to sign in to your account. This link expires in 15 minutes.</p>
+        <a href="${magicLink}" class="btn">Sign in to Kira</a>
+        <p class="link" style="margin-top: 24px;">Or copy this link: ${magicLink}</p>
+      </div>
+      <div class="footer">
+        <p>If you didn't request this email, you can safely ignore it.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"Kira" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Sign in to Kira',
+      text: `Sign in to Kira:\n\n${magicLink}\n\nThis link expires in 15 minutes.`,
+      html: htmlContent,
+    });
+
+    console.log(`[Email] Sent magic link to ${email}`);
+    return true;
+  } catch (error) {
+    console.error('[Email] Failed to send magic link:', error);
+    return false;
+  }
+}
+

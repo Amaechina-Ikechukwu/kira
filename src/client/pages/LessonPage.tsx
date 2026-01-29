@@ -121,6 +121,24 @@ export default function LessonPage() {
   }
 
   if (!lesson) return null;
+  if (!lesson.stage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-learning">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl p-8 border border-red-200 shadow-lg max-w-md text-center"
+        >
+          <span className="text-4xl mb-4 block">😕</span>
+          <h2 className="text-xl font-bold text-red-500 mb-2">Lesson Loading Error</h2>
+          <p className="text-slate-500 mb-6">The lesson content could not be loaded. Please try again.</p>
+          <button onClick={handleGoHome} className="btn-secondary">
+            Back to Home
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-learning">

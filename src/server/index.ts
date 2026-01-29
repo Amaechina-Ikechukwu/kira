@@ -5,6 +5,8 @@ import { dirname, resolve } from 'path';
 import 'dotenv/config';
 
 import lessonRoutes from './routes/lesson';
+import authRoutes, { authMiddleware } from './routes/auth';
+import documentRoutes from './routes/documents';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
@@ -15,12 +17,15 @@ async function startServer() {
 
   // Middleware
   app.use(express.json());
+  app.use(authMiddleware); // Add user to request if authenticated
 
   // API Routes
   app.get('/api/health', (_, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  app.use('/api/auth', authRoutes);
+  app.use('/api/documents', documentRoutes);
   app.use('/api/lesson', lessonRoutes);
 
   if (isProduction) {

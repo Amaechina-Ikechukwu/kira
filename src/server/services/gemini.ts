@@ -304,3 +304,78 @@ function buildStagesFromLessonPage(lessonPage: LessonPage, _personalityTone: str
 
   return stages;
 }
+
+/**
+ * Generate an exploratory lesson on any topic (no quiz data needed).
+ * Used when users want to learn something new from the landing page.
+ */
+export async function generateExploratoryLesson(
+  topic: string,
+  personalityTone: string = 'Hype Man'
+): Promise<{ lessonPlan: GameInterface }> {
+  
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not configured');
+  }
+
+  const prompt = `You are Kira, a friendly and encouraging AI tutor.
+
+Create an engaging introductory lesson about: "${topic}"
+
+Design this as a fun, interactive learning experience:
+
+1. CREATE 3-4 TEACHING SECTIONS that:
+   - Break down the topic into key concepts
+   - Explain each concept clearly with relatable examples
+   - Include a memorable key point for each
+   - Make it engaging and conversational
+
+2. CREATE 3-4 QUIZ QUESTIONS to test understanding:
+   - Questions should test the concepts you just taught
+   - Provide 4 options with only ONE correct answer
+   - Set correctIndex to the index (0-3) of the correct option
+   - Include helpful explanations for after they answer
+
+Make the content:
+- Beginner-friendly but not condescending
+- Interesting with real-world examples
+- Memorable with clever analogies
+- Fun and engaging throughout
+
+Personality tone: ${personalityTone}
+`;
+
+  console.log('[Gemini] Generating exploratory lesson for topic:', topic);
+
+  const response = await genAI.models.generateContent({
+    model: "gemini-2.0-flash",
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: LessonPageSchema,
+      maxOutputTokens: 4096,
+    },
+  });
+
+  const responseText = response.text || '{}';
+  console.log('[Gemini] Exploratory lesson response length:', responseText.length);
+  
+  let lessonPage: LessonPage;
+  
+  try {
+    lessonPage = JSON.parse(responseText) as LessonPage;
+  } catch (parseError) {
+    console.error('[Gemini] JSON parse error:', responseText.substring(0, 500));
+    throw new Error('Failed to parse AI response');
+  }
+
+  // Build game stages from lesson page
+  const stages = buildStagesFromLessonPage(lessonPage, personalityTone);
+
+  return {
+    lessonPlan: {
+      personalityTone,
+      stages,
+    },
+  };
+}
