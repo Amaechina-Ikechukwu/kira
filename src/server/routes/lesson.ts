@@ -186,8 +186,8 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-// Get current lesson state (requires auth)
-router.get('/:sessionId', requireAuth, async (req: Request, res: Response) => {
+// Get current lesson state (accessible via session ID from email link)
+router.get('/:sessionId', optionalAuth, async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId as string;
     console.log(`[Lesson] GET session: ${sessionId}`);
@@ -225,8 +225,8 @@ router.get('/:sessionId', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-// Advance to next stage (requires auth)
-router.post('/:sessionId/progress', requireAuth, async (req: Request, res: Response) => {
+// Advance to next stage (accessible via session ID from email link)
+router.post('/:sessionId/progress', optionalAuth, async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId as string;
 
