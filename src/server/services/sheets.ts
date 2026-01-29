@@ -50,10 +50,23 @@ export async function getStudentQuizData(email: string): Promise<StudentQuizData
 
   try {
     // Load service account credentials
-    const auth = new google.auth.GoogleAuth({
-      keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_PATH,
+    // Support both file path (local dev) and JSON string (Cloud Run)
+    let authOptions: any = {
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-    });
+    };
+
+    if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+      // Cloud Run: Parse JSON from environment variable
+      const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+      authOptions.credentials = credentials;
+    } else if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH) {
+      // Local dev: Use file path
+      authOptions.keyFile = process.env.GOOGLE_SERVICE_ACCOUNT_PATH;
+    } else {
+      throw new Error('No Google credentials configured. Set GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_SERVICE_ACCOUNT_PATH');
+    }
+
+    const auth = new google.auth.GoogleAuth(authOptions);
 
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
