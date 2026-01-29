@@ -5,6 +5,7 @@ An AI-powered learning companion that creates personalized lessons from quiz res
 ## Features
 
 - 🤖 **AI-Generated Lessons** - Uses Gemini to create personalized teaching content
+- 🌐 **Topic Exploration** - Instant AI lessons for any topic via public landing page demo
 - 📄 **Document Support** - Extracts knowledge from PDF files to supplement lessons
 - 📧 **Email Integration** - Sends lesson invites via email
 - 📊 **Google Sheets Integration** - Reads quiz data from Google Forms responses
@@ -63,10 +64,11 @@ bun run dev
 
 ## API Endpoints
 
-- `POST /api/lesson/invite` - Send lesson invite email
-- `POST /api/lesson/start` - Start a lesson session
-- `GET /api/lesson/:sessionId` - Get lesson data
-- `POST /api/lesson/:sessionId/progress` - Update progress
+- `POST /api/lesson/explore` - Explore a topic (Public)
+- `POST /api/lesson/invite` - Send lesson invite email (Auth required)
+- `POST /api/lesson/start` - Start a lesson session (Auth required)
+- `GET /api/lesson/:sessionId` - Get lesson data (Auth required)
+- `POST /api/lesson/:sessionId/progress` - Update progress (Auth required)
 
 ## License
 

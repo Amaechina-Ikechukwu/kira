@@ -13,6 +13,6 @@ export default {
     user: process.env.POSTGRES_USER!,
     password: process.env.POSTGRES_PASSWORD!,
     database: process.env.POSTGRES_DATABASE!,
-    ssl: false,
+    ssl: 'require',
   },
 } satisfies Config;

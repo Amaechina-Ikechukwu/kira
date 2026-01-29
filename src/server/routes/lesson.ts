@@ -4,11 +4,16 @@ import { getStudentQuizData } from '../services/sheets';
 import { generateLessonPlan, generateExploratoryLesson } from '../services/gemini';
 import { sendLessonInviteEmail } from '../services/email';
 import { getSession, setSession, updateSession } from '../stores/sessionStore';
+import { requireAuth, optionalAuth } from './auth';
 
 const router = Router();
 
-// Send lesson invite email to student (email-only, no studentId)
-router.post('/invite', async (req: Request, res: Response) => {
+// Note: Auth is applied per-route below
+// /explore uses optionalAuth to allow public access from landing page
+// All other routes require authentication
+
+// Send lesson invite email to student (requires auth)
+router.post('/invite', requireAuth, async (req: Request, res: Response) => {
   try {
     const { email, studentName, personalityTone = 'Hype Man' } = req.body;
 
@@ -80,8 +85,8 @@ router.post('/invite', async (req: Request, res: Response) => {
   }
 });
 
-// Explore a topic (no email required - for landing page)
-router.post('/explore', async (req: Request, res: Response) => {
+// Explore a topic (public - no auth required for landing page demo)
+router.post('/explore', optionalAuth, async (req: Request, res: Response) => {
   try {
     const { topic, personalityTone = 'Hype Man' } = req.body;
 
@@ -126,8 +131,8 @@ router.post('/explore', async (req: Request, res: Response) => {
   }
 });
 
-// Create a new lesson session (for direct access, still uses email)
-router.post('/start', async (req: Request, res: Response) => {
+// Create a new lesson session (requires auth)
+router.post('/start', requireAuth, async (req: Request, res: Response) => {
   try {
     const { email, personalityTone = 'Hype Man' } = req.body;
 
@@ -169,8 +174,8 @@ router.post('/start', async (req: Request, res: Response) => {
   }
 });
 
-// Get current lesson state
-router.get('/:sessionId', async (req: Request, res: Response) => {
+// Get current lesson state (requires auth)
+router.get('/:sessionId', requireAuth, async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId as string;
     console.log(`[Lesson] GET session: ${sessionId}`);
@@ -208,8 +213,8 @@ router.get('/:sessionId', async (req: Request, res: Response) => {
   }
 });
 
-// Advance to next stage
-router.post('/:sessionId/progress', async (req: Request, res: Response) => {
+// Advance to next stage (requires auth)
+router.post('/:sessionId/progress', requireAuth, async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId as string;
 

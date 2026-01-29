@@ -215,10 +215,20 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
  * Require auth middleware - returns 401 if not authenticated
  */
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  if (!(req as any).userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-  next();
+  // First run authMiddleware to populate user info
+  authMiddleware(req, res, () => {
+    if (!(req as any).userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    next();
+  });
+}
+
+/**
+ * Optional auth middleware - allows request to proceed but populates user info if available
+ */
+export function optionalAuth(req: Request, res: Response, next: NextFunction) {
+  authMiddleware(req, res, next);
 }
 
 export default router;
