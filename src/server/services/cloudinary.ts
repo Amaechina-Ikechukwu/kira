@@ -2,11 +2,22 @@ import { v2 as cloudinary } from 'cloudinary';
 import type { UploadApiResponse } from 'cloudinary';
 
 // Configure Cloudinary
-cloudinary.config({
+const cloudinaryConfig = {
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+};
+
+// Validate configuration
+if (!cloudinaryConfig.cloud_name || !cloudinaryConfig.api_key || !cloudinaryConfig.api_secret) {
+  console.error('[Cloudinary] Missing configuration:', {
+    hasCloudName: !!cloudinaryConfig.cloud_name,
+    hasApiKey: !!cloudinaryConfig.api_key,
+    hasApiSecret: !!cloudinaryConfig.api_secret,
+  });
+}
+
+cloudinary.config(cloudinaryConfig);
 
 export interface UploadResult {
   url: string;
