@@ -13,6 +13,7 @@ import classesRoutes from './routes/classes';
 import meetingsRoutes from './routes/meetings';
 import quizzesRoutes from './routes/quizzes';
 import invitesRoutes from './routes/school-invites';
+import adminRoutes from './routes/admin';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
@@ -41,6 +42,7 @@ async function startServer() {
   app.use('/api', meetingsRoutes); // /api/meetings/:id
   app.use('/api/schools', quizzesRoutes); // /api/schools/:schoolId/quizzes
   app.use('/api', quizzesRoutes); // /api/quizzes/:id, /api/attempts/:id, /api/reviews
+  app.use('/api/admin', adminRoutes); // /api/admin/invitations
 
   if (isProduction) {
     // Production: serve static files from dist/client

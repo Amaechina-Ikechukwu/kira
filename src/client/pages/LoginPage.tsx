@@ -126,7 +126,7 @@ export default function LoginPage() {
             transition={{ delay: 0.2 }}
             className="mt-6 text-3xl font-bold text-stone-800"
           >
-            Welcome to <span className="text-gradient">Kira</span>
+            Welcome to <span className="text-pink-600">Kira</span>
           </motion.h1>
           
           <motion.p 
@@ -182,8 +182,8 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-800 
-                placeholder:text-stone-400 focus:outline-none focus:border-violet-500 
-                focus:ring-4 focus:ring-violet-500/10 transition-all"
+                placeholder:text-stone-400 focus:outline-none focus:border-pink-500 
+                focus:ring-4 focus:ring-pink-500/10 transition-all"
               required
             />
 
@@ -213,7 +213,7 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-stone-400">
           Just want to explore?{' '}
-          <a href="/" className="text-violet-600 hover:underline">
+          <a href="/" className="text-pink-600 hover:underline">
             Try without signing in
           </a>
         </p>

@@ -36,7 +36,7 @@ export default function LevelMap({ levels = [] }: LevelMapProps) {
                   level.status === 'completed'
                     ? 'bg-emerald-50 border-emerald-500 text-emerald-500'
                     : level.status === 'current'
-                    ? 'bg-blue-50 border-blue-500 text-blue-500 animate-pulse-soft'
+                    ? 'bg-pink-50 border-pink-500 text-pink-500 animate-pulse-soft'
                     : 'bg-slate-50 border-slate-300 text-slate-400'
                 }`}
               >
@@ -54,7 +54,7 @@ export default function LevelMap({ levels = [] }: LevelMapProps) {
 
                 {/* Glow effect for current */}
                 {level.status === 'current' && (
-                  <div className="absolute inset-0 rounded-full bg-blue-200/50 animate-ping" />
+                  <div className="absolute inset-0 rounded-full bg-pink-200/50 animate-ping" />
                 )}
               </div>
 
@@ -64,7 +64,7 @@ export default function LevelMap({ levels = [] }: LevelMapProps) {
                   level.status === 'completed'
                     ? 'text-emerald-600'
                     : level.status === 'current'
-                    ? 'text-blue-600'
+                    ? 'text-pink-600'
                     : 'text-slate-400'
                 }`}
               >
@@ -80,7 +80,7 @@ export default function LevelMap({ levels = [] }: LevelMapProps) {
                 transition={{ delay: index * 0.1 + 0.1 }}
                 className={`w-8 md:w-16 h-1 mx-2 rounded-full origin-left ${
                   levels[index + 1].status !== 'locked'
-                    ? 'bg-gradient-to-r from-emerald-400 to-blue-400'
+                    ? 'bg-pink-400'
                     : 'bg-slate-200'
                 }`}
               />

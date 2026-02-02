@@ -92,7 +92,7 @@ export default function SchoolsListPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
            <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-4xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-600">
+            <h1 className="text-4xl font-display font-bold text-pink-600">
               My Schools
             </h1>
             <Mascot expression="happy" size="sm" />
@@ -102,9 +102,10 @@ export default function SchoolsListPage() {
           </p>
         </div>
         
+        {/* BUTTON REMAINS GREEN/EMERALD */}
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="group relative flex items-center justify-center px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 overflow-hidden"
+          className="group relative flex items-center justify-center px-6 py-3 bg-emerald-400 text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 hover:shadow-xl hover:bg-emerald-500 transition-all duration-300 overflow-hidden"
         >
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
           <Plus className="w-5 h-5 mr-2" />
@@ -115,11 +116,11 @@ export default function SchoolsListPage() {
       {/* Search Input */}
       <div className="relative max-w-2xl">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-violet-400" />
+          <Search className="h-5 w-5 text-pink-400" />
         </div>
         <input
           type="text"
-          className="block w-full pl-11 pr-4 py-4 bg-white/60 backdrop-blur-xl border-2 border-violet-100 rounded-2xl text-stone-700 placeholder-violet-300 focus:outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100/50 transition-all duration-300 shadow-sm"
+          className="block w-full pl-11 pr-4 py-4 bg-white/60 backdrop-blur-xl border-2 border-stone-100 rounded-2xl text-stone-700 placeholder-stone-400 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-100/50 transition-all duration-300 shadow-sm"
           placeholder="Search for a school..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -129,12 +130,12 @@ export default function SchoolsListPage() {
       {/* Content Grid */}
       {isLoading ? (
         <div className="flex justify-center py-20">
-          <Loader2 className="w-10 h-10 text-violet-600 animate-spin" />
+          <Loader2 className="w-10 h-10 text-pink-600 animate-spin" />
         </div>
       ) : filteredSchools.length === 0 ? (
         <div className="text-center py-20 bg-white/40 backdrop-blur-md rounded-3xl border border-white/60 shadow-sm">
-          <div className="w-20 h-20 mx-auto bg-gradient-to-tr from-violet-100 to-pink-100 rounded-full flex items-center justify-center mb-6">
-            <SchoolIcon className="w-10 h-10 text-violet-500" />
+          <div className="w-20 h-20 mx-auto bg-pink-50 rounded-full flex items-center justify-center mb-6">
+            <SchoolIcon className="w-10 h-10 text-pink-500" />
           </div>
           <h3 className="text-2xl font-bold text-stone-700 mb-2">No schools found</h3>
           <p className="text-stone-500 max-w-md mx-auto mb-8">
@@ -142,7 +143,7 @@ export default function SchoolsListPage() {
           </p>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="px-6 py-3 bg-white text-violet-600 font-bold rounded-xl shadow-sm border border-violet-100 hover:bg-violet-50 transition-colors"
+            className="px-6 py-3 bg-white text-emerald-500 font-bold rounded-xl shadow-sm border border-emerald-100 hover:bg-emerald-50 transition-colors"
           >
             Create Your First School
           </button>
@@ -153,33 +154,31 @@ export default function SchoolsListPage() {
             <div 
               key={school.id}
               onClick={() => navigate(`/schools/${school.id}`)}
-              className="group cursor-pointer bg-white/70 backdrop-blur-md rounded-3xl border border-white/50 p-6 hover:border-violet-300 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 relative overflow-hidden"
+              className="group cursor-pointer bg-white/70 backdrop-blur-md rounded-3xl border border-white/50 p-6 hover:border-pink-300 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 relative overflow-hidden"
             >
-              {/* Card Background Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-50/50 via-transparent to-pink-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-6">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center text-violet-600 font-bold text-2xl shadow-inner border border-white/50">
+                  <div className="w-14 h-14 rounded-2xl bg-pink-50 flex items-center justify-center text-pink-600 font-bold text-2xl border border-white/50">
                     {school.name.substring(0, 2).toUpperCase()}
                   </div>
                   <span className={`
                     px-3 py-1 text-xs font-bold rounded-full capitalize border
                     ${school.myRole === 'principal' 
                       ? 'bg-amber-100 text-amber-700 border-amber-200' 
-                      : 'bg-blue-100 text-blue-700 border-blue-200'}
+                      : 'bg-pink-100 text-pink-700 border-pink-200'}
                   `}>
                     {school.myRole?.replace('_', ' ')}
                   </span>
                 </div>
 
-                <h3 className="text-xl font-bold text-stone-800 mb-2 group-hover:text-violet-700 transition-colors">
+                <h3 className="text-xl font-bold text-stone-800 mb-2 group-hover:text-pink-600 transition-colors">
                   {school.name}
                 </h3>
 
                 <div className="space-y-2 mb-6">
                     <div className="flex items-center text-sm text-stone-500">
-                      <Building2 className="w-4 h-4 mr-2 text-violet-400" />
+                      <Building2 className="w-4 h-4 mr-2 text-pink-400" />
                       <span className="capitalize">{school.type.replace('_', ' ')}</span>
                     </div>
                     {school.city && (
@@ -190,7 +189,7 @@ export default function SchoolsListPage() {
                     )}
                 </div>
 
-                <div className="pt-4 border-t border-stone-100 flex justify-between items-center text-sm font-semibold text-violet-600">
+                <div className="pt-4 border-t border-stone-100 flex justify-between items-center text-sm font-semibold text-pink-600">
                   <span>View Dashboard</span>
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </div>
@@ -205,7 +204,7 @@ export default function SchoolsListPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl animate-in fade-in zoom-in duration-200 border border-white/50 relative overflow-hidden">
             {/* Background Blob */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-violet-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-pink-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
             
             <div className="flex items-center justify-between mb-8 relative z-10">
               <h2 className="text-2xl font-bold text-stone-800">Create New School</h2>
@@ -233,7 +232,7 @@ export default function SchoolsListPage() {
                   required
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 bg-stone-50 border-2 border-stone-100 rounded-xl text-stone-800 focus:outline-none focus:border-violet-400 focus:bg-white transition-all font-medium"
+                  className="w-full px-4 py-3 bg-stone-50 border-2 border-stone-100 rounded-xl text-stone-800 focus:outline-none focus:border-pink-400 focus:bg-white transition-all font-medium"
                   placeholder="e.g. Springfield High"
                 />
               </div>
@@ -262,7 +261,7 @@ export default function SchoolsListPage() {
                     type="text"
                     value={formData.city}
                     onChange={e => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full px-4 py-3 bg-stone-50 border-2 border-stone-100 rounded-xl text-stone-800 focus:outline-none focus:border-violet-400 focus:bg-white transition-all font-medium"
+                    className="w-full px-4 py-3 bg-stone-50 border-2 border-stone-100 rounded-xl text-stone-800 focus:outline-none focus:border-pink-400 focus:bg-white transition-all font-medium"
                     placeholder="e.g. New York"
                   />
                 </div>
@@ -274,7 +273,7 @@ export default function SchoolsListPage() {
                     type="text"
                     value={formData.country}
                     onChange={e => setFormData({ ...formData, country: e.target.value })}
-                    className="w-full px-4 py-3 bg-stone-50 border-2 border-stone-100 rounded-xl text-stone-800 focus:outline-none focus:border-violet-400 focus:bg-white transition-all font-medium"
+                    className="w-full px-4 py-3 bg-stone-50 border-2 border-stone-100 rounded-xl text-stone-800 focus:outline-none focus:border-pink-400 focus:bg-white transition-all font-medium"
                     placeholder="e.g. USA"
                   />
                 </div>
@@ -288,10 +287,11 @@ export default function SchoolsListPage() {
                 >
                   Cancel
                 </button>
+                {/* BUTTON REMAINS GREEN/EMERALD */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-3 text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-colors shadow-lg shadow-violet-200 disabled:opacity-50 disabled:shadow-none flex items-center"
+                  className="px-6 py-3 text-sm font-bold text-white bg-emerald-400 hover:bg-emerald-500 rounded-xl transition-colors shadow-lg shadow-emerald-200 disabled:opacity-50 disabled:shadow-none flex items-center"
                 >
                   {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Create School
@@ -304,5 +304,7 @@ export default function SchoolsListPage() {
     </div>
   );
 }
+
+
 
 // End of file

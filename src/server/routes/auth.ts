@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { randomBytes } from 'crypto';
 import { parse, serialize } from 'cookie';
-import { eq, lt } from 'drizzle-orm';
+import { eq, lt, and } from 'drizzle-orm';
 import { db, schema } from '../db';
 import { sendMagicLinkEmail } from '../services/email';
 import { 
@@ -69,10 +69,78 @@ async function deleteSession(sessionId: string) {
  * Clean up expired sessions (call periodically)
  */
 export async function cleanupExpiredSessions() {
-  const result = await db.delete(schema.authSessions)
-    .where(lt(schema.authSessions.expiresAt, new Date()));
-  console.log('[Auth] Cleaned up expired sessions');
   return result;
+}
+
+/**
+ * Process any pending invitations for the user
+ */
+async function processPendingInvitations(email: string, userId: string) {
+  try {
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // 1. Check Platform Invitations
+    const platformInvite = await db.query.platformInvitations.findFirst({
+      where: and(
+        eq(schema.platformInvitations.email, normalizedEmail),
+        eq(schema.platformInvitations.acceptedAt, null as any) // Check explicitly for null
+      ),
+    });
+
+    if (platformInvite && platformInvite.expiresAt > new Date()) {
+      // Update user platform role
+      await db.update(schema.users)
+        .set({ platformRole: platformInvite.role as any })
+        .where(eq(schema.users.id, userId));
+
+      // Mark invite as accepted
+      await db.update(schema.platformInvitations)
+        .set({ acceptedAt: new Date() })
+        .where(eq(schema.platformInvitations.id, platformInvite.id));
+
+      console.log('[Auth] Processed platform invite for:', userId, 'Role:', platformInvite.role);
+    }
+
+    // 2. Check School Invitations
+    const schoolInvites = await db.query.schoolInvitations.findMany({
+      where: and(
+        eq(schema.schoolInvitations.email, normalizedEmail),
+        eq(schema.schoolInvitations.acceptedAt, null as any)
+      ),
+    });
+
+    for (const invite of schoolInvites) {
+      if (invite.expiresAt > new Date()) {
+        // Check if already a member
+        const existingMembership = await db.query.schoolMemberships.findFirst({
+            where: and(
+              eq(schema.schoolMemberships.userId, userId),
+              eq(schema.schoolMemberships.schoolId, invite.schoolId)
+            )
+        });
+
+        if (!existingMembership) {
+           // Create membership
+           await db.insert(schema.schoolMemberships).values({
+             userId,
+             schoolId: invite.schoolId,
+             role: invite.role as any,
+             departmentId: invite.departmentId,
+             status: 'active',
+           });
+
+           // Mark accepted
+           await db.update(schema.schoolInvitations)
+             .set({ acceptedAt: new Date() })
+             .where(eq(schema.schoolInvitations.id, invite.id));
+             
+           console.log('[Auth] Processed school invite for:', userId, 'School:', invite.schoolId, 'Role:', invite.role);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[Auth] Error processing invitations:', error);
+  }
 }
 
 /**
@@ -87,6 +155,7 @@ function setSessionCookie(res: Response, sessionId: string) {
     path: '/',
   }));
 }
+
 
 /**
  * Clear session cookie
@@ -202,6 +271,9 @@ router.get('/google/callback', async (req: Request, res: Response) => {
       }
     }
     
+    // Process invitations
+    await processPendingInvitations(user.email, user.id);
+
     // Create session
     const sessionId = await createSession(user.id, user.email, req);
     setSessionCookie(res, sessionId);
@@ -312,6 +384,9 @@ router.get('/verify/:token', async (req: Request, res: Response) => {
     await db.update(schema.users)
       .set({ magicLinkToken: null, tokenExpiry: null, lastActiveAt: new Date() })
       .where(eq(schema.users.id, user.id));
+
+    // Process invitations
+    await processPendingInvitations(user.email, user.id);
 
     // Create session in database
     const sessionId = await createSession(user.id, user.email, req);

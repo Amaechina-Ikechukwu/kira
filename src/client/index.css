@@ -6,7 +6,7 @@
   /* Pink Theme - Kira's personality */
   --primary: #ec4899;      /* Vibrant pink */
   --primary-dark: #db2777;
-  --secondary: #f472b6;    /* Light pink accent */
+  --secondary: #34d399;    /* Mint Green */
   --accent: #f9a8d4;       /* Soft pink highlight */
   --background: #fafafa;
   --surface: #ffffff;
@@ -164,8 +164,8 @@ h1, h2, h3, .font-display {
 
   .topic-card.selected {
     border-color: var(--primary);
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(245, 158, 11, 0.04) 100%);
-    box-shadow: 0 4px 15px var(--glow);
+    background: #fdf2f8; /* pink-50 */
+    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.1);
   }
 
   /* Smooth shadow transitions */

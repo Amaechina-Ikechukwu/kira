@@ -1,16 +1,17 @@
 # 🎓 Kira - AI Learning Platform
 
-An AI-powered learning companion that creates personalized lessons from quiz results and documents. Kira teaches concepts first, then quizzes to reinforce understanding.
+An AI-powered learning platform and management system that creates personalized lessons from quiz results and documents. Kira teaches concepts first, then reinforces understanding through gamified quizzes and performance tracking.
 
 ## Features
 
 - 🤖 **AI-Generated Lessons** - Uses Gemini to create personalized teaching content
 - 🔐 **Google Authentication** - Secure user sign-in via Google OAuth
-- 🌐 **Topic Exploration** - Instant AI lessons for any topic via public landing page demo
+- 🏫 **School & Classroom Management** - Support for institutional structures, departments, and class schedules
+- 📊 **Performance Analytics** - Detailed tracking of accuracy, XP rewards, and time spent on lessons
 - 📄 **Document Support** - Extracts knowledge from PDF files to supplement lessons
-- 📧 **Email Integration** - Sends lesson invites via email
-- 📊 **Google Sheets Integration** - Reads quiz data from Google Forms responses
-- 🎮 **Interactive UI** - Animated mascot, progress tracking, and quizzes
+- 📧 **Email Integration** - Sends lesson invites and review sessions via email
+- 🎮 **Gamified UI** - Animated mascot, interactive "Boss Battles," and XP-based progression
+- 🌐 **Topic Exploration** - Instant AI lessons for any topic via public landing page demo
 
 ## Tech Stack
 
@@ -64,11 +65,11 @@ bun run test
 
 ## How It Works
 
-1. **Quiz Webhook** → Receives quiz submission data
-2. **Sheets/Doc Fetch** → Gets student answers and optional PDF context
-3. **AI Generation** → Gemini creates teaching content + quiz questions
-4. **Email Sent** → Student receives lesson link
-5. **Learn & Quiz** → Student learns concepts, then takes quiz
+1. **Quiz Webhook/Form** → Receives student submission data or manual input
+2. **Context Retrieval** → Fetches student answers and optional PDF documentation
+3. **AI Generation** → Gemini creates pedagogical content, interactive cards, and quiz questions
+4. **Email/Dashboard** → Student receives access via email or finds the lesson in their classroom dashboard
+5. **Learn & Battle** → Student completes lessons, earns XP, and faces "Boss Battles" to track progress
 
 ## API Endpoints
 
@@ -76,7 +77,7 @@ bun run test
 - `POST /api/lesson/invite` - Send lesson invite email (Auth required)
 - `POST /api/lesson/start` - Start a lesson session (Auth required)
 - `GET /api/lesson/:sessionId` - Get lesson data (Auth required)
-- `POST /api/lesson/:sessionId/progress` - Update progress (Auth required)
+- `POST /api/lesson/:sessionId/progress` - Update progress and performance stats (Auth required)
 - `GET /api/auth/google/callback` - Google OAuth authentication callback
 
 ## License

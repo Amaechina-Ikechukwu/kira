@@ -7,7 +7,7 @@ interface ExplainerCardProps {
   title: string;
   content: string;
   encouragement?: string;
-  onProgress: () => void;
+  onProgress: (result?: { correct?: boolean; xp?: number }) => void;
   isLoading: boolean;
 }
 
@@ -53,9 +53,9 @@ export default function ExplainerCard({
         <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
           
           {/* Header */}
-          <div className="px-8 pt-8 pb-6 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+          <div className="px-8 pt-8 pb-6 border-b border-slate-100 bg-slate-50">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/25">
+              <div className="w-12 h-12 rounded-2xl bg-pink-500 flex items-center justify-center text-white text-xl shadow-sm">
                 📖
               </div>
               <div className="flex-1">
@@ -70,8 +70,9 @@ export default function ExplainerCard({
             <div className="prose prose-lg prose-slate max-w-none
               prose-headings:font-bold prose-headings:text-slate-800
               prose-p:text-slate-600 prose-p:leading-relaxed
-              prose-strong:text-blue-600 prose-strong:font-semibold
-              prose-code:bg-slate-100 prose-code:px-2 prose-code:py-0.5 prose-code:rounded-md prose-code:text-indigo-600 prose-code:font-mono prose-code:text-sm prose-code:before:content-none prose-code:after:content-none
+              prose-p:text-slate-600 prose-p:leading-relaxed
+              prose-strong:text-pink-600 prose-strong:font-semibold
+              prose-code:bg-slate-100 prose-code:px-2 prose-code:py-0.5 prose-code:rounded-md prose-code:text-orange-600 prose-code:font-mono prose-code:text-sm prose-code:before:content-none prose-code:after:content-none
             ">
               <ReactMarkdown>{content}</ReactMarkdown>
             </div>
@@ -83,9 +84,9 @@ export default function ExplainerCard({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="mx-8 mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100"
+              className="mx-8 mb-6 p-4 bg-pink-50 rounded-2xl border border-pink-100"
             >
-              <p className="text-blue-700 font-medium text-center flex items-center justify-center gap-2">
+              <p className="text-pink-700 font-medium text-center flex items-center justify-center gap-2">
                 <span className="text-xl">💡</span>
                 {encouragement}
               </p>
@@ -97,11 +98,11 @@ export default function ExplainerCard({
             <motion.button
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              onClick={onProgress}
+              onClick={() => onProgress()}
               disabled={isLoading}
-              className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 
+              className="w-full py-4 px-6 bg-emerald-500 hover:bg-emerald-600 
                 text-white font-semibold text-lg rounded-2xl
-                shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40
+                shadow-lg hover:shadow-xl
                 transition-all duration-200
                 disabled:opacity-50 disabled:cursor-not-allowed
                 flex items-center justify-center gap-3"

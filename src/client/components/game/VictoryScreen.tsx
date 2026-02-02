@@ -20,7 +20,7 @@ function Confetti() {
   const [particles, setParticles] = useState<Array<{ id: number; x: number; color: string; delay: number }>>([]);
 
   useEffect(() => {
-    const colors = ['#3b82f6', '#06b6d4', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899'];
+    const colors = ['#ec4899', '#db2777', '#10b981', '#facc15', '#fde047', '#be185d'];
     const newParticles = Array.from({ length: 50 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
@@ -70,11 +70,8 @@ export default function VictoryScreen({
         className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden"
       >
         {/* Trophy Header */}
-        <div className="relative bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 p-8 text-center">
-          {/* Animated glow */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/20 rounded-full blur-3xl animate-pulse" />
-          </div>
+        <div className="relative bg-pink-600 p-8 text-center">
+          {/* Removed shiny effects */}
 
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
@@ -181,12 +178,12 @@ function StatCard({
       transition={{ delay }}
       className={`p-4 rounded-xl text-center ${
         highlight
-          ? 'bg-blue-50 border border-blue-200'
+          ? 'bg-pink-50 border border-pink-200'
           : 'bg-slate-50 border border-slate-200'
       }`}
     >
       <span className="text-2xl block mb-1">{icon}</span>
-      <p className={`text-xl font-bold ${highlight ? 'text-blue-600' : 'text-slate-800'}`}>
+      <p className={`text-xl font-bold ${highlight ? 'text-pink-600' : 'text-slate-800'}`}>
         {value}
       </p>
       <p className="text-xs text-slate-500 mt-1">{label}</p>

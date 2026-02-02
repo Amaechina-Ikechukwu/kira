@@ -27,6 +27,13 @@ export default function LessonPage() {
   const [lesson, setLesson] = useState<LessonState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  // Stats tracking
+  const [stats, setStats] = useState({
+    questionsAnswered: 0,
+    correctAnswers: 0,
+    xpEarned: 0,
+    startTime: Date.now()
+  });
 
   useEffect(() => {
     fetchLesson();
@@ -51,24 +58,40 @@ export default function LessonPage() {
     }
   };
 
-  const handleProgress = async () => {
+  const handleProgress = async (result?: { correct?: boolean; xp?: number }) => {
     if (!sessionId) return;
+
+    // Update local stats
+    if (result) {
+        setStats(prev => ({
+            ...prev,
+            questionsAnswered: result.correct !== undefined ? prev.questionsAnswered + 1 : prev.questionsAnswered,
+            correctAnswers: result.correct ? prev.correctAnswers + 1 : prev.correctAnswers,
+            xpEarned: prev.xpEarned + (result.xp || 0)
+        }));
+    }
 
     setIsLoading(true);
     try {
       const response = await fetch(`/api/lesson/${sessionId}/progress`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correct: true }),
+        body: JSON.stringify({ correct: result?.correct ?? true }),
       });
 
       const data = await response.json();
 
       if (data.isComplete) {
         setLesson(prev => prev ? { ...prev, isComplete: true } : null);
+        // Don't auto-redirect if we have a victory screen component, 
+        // but currently the victory screen is part of the components list?
+        // Actually, if data.isComplete is true, the backend says we are done.
+        // But if the LAST component was a Victory Screen, we might want to show it?
+        // If the AI puts VictoryScreen as the last stage, then isComplete will only be true AFTER that stage.
+        
         setTimeout(() => {
           navigate('/');
-        }, 1500);
+        }, 3000);
       } else {
         setLesson(data);
       }
@@ -91,7 +114,7 @@ export default function LessonPage() {
           animate={{ opacity: 1 }}
           className="text-center"
         >
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-16 h-16 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-500">Loading your lesson...</p>
         </motion.div>
       </div>
@@ -159,7 +182,7 @@ export default function LessonPage() {
         </button>
         <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-200 shadow-sm">
           <span className="text-sm text-slate-500">Stage</span>
-          <span className="font-bold text-blue-600">{lesson.currentStage}</span>
+          <span className="font-bold text-pink-600">{lesson.currentStage}</span>
           <span className="text-slate-400">/</span>
           <span className="text-slate-500">{lesson.totalStages}</span>
         </div>
@@ -171,7 +194,7 @@ export default function LessonPage() {
           animate={{ scale: 1, opacity: 1 }}
           className="text-center py-20"
         >
-          <h1 className="text-5xl md:text-6xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-500 mb-4">
+          <h1 className="text-5xl md:text-6xl font-display font-bold text-pink-600 mb-4">
             Lesson Complete! 🎉
           </h1>
           <p className="text-xl text-slate-500">Redirecting to home...</p>
@@ -197,6 +220,7 @@ export default function LessonPage() {
                 onProgress={handleProgress}
                 onComplete={handleGoHome}
                 isLoading={isLoading}
+                stats={stats}
               />
             </motion.div>
           </AnimatePresence>

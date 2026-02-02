@@ -46,11 +46,16 @@ export async function generateEmbedding(text: string): Promise<number[]> {
       contents: text,
     });
 
-    if (!result.embedding || !result.embedding.values) {
+    // Handle different response structures based on SDK version/docs
+    // User suggests response.embeddings might be the correct property
+    const embedding = result.embeddings?.[0]?.values || result.embedding?.values;
+
+    if (!embedding) {
+      console.warn('Full embedding response:', JSON.stringify(result, null, 2));
       throw new Error('No embedding returned from API');
     }
 
-    return result.embedding.values;
+    return embedding;
   } catch (error) {
     console.error('[Embeddings] Generation error:', error);
     throw new Error(`Failed to generate embedding: ${error instanceof Error ? error.message : 'Unknown error'}`);

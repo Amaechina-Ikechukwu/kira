@@ -132,24 +132,8 @@ export default function DashboardLayout() {
   return (
     <div className="min-h-screen bg-neutral-50 relative overflow-hidden">
        {/* Animated background elements - Copied from HomePage for consistency */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] rounded-full opacity-60"
-          style={{
-            background: 'radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%)',
-          }}
-        />
-        <motion.div 
-          animate={{ rotate: -360 }}
-          transition={{ duration: 150, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-1/4 -left-1/4 w-[700px] h-[700px] rounded-full opacity-60"
-          style={{
-            background: 'radial-gradient(circle, rgba(245, 158, 11, 0.06) 0%, transparent 70%)',
-          }}
-        />
-      </div>
+       {/* REMOVED GRADIENTS AS PER USER REQUEST */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 bg-stone-50" />
 
       {/* Mobile sidebar backdrop */}
       <AnimatePresence>
@@ -173,7 +157,7 @@ export default function DashboardLayout() {
         <div className="flex flex-col h-full">
           {/* Header with Mascot */}
           <div className="px-6 pt-8 pb-4 flex flex-col items-center border-b border-pink-50">
-            <span className="text-3xl font-display font-bold bg-gradient-to-r from-pink-500 to-violet-600 bg-clip-text text-transparent">
+            <span className="text-3xl font-display font-bold text-pink-600">
               Kira
             </span>
             <span className="text-[10px] text-stone-400 font-medium tracking-wider uppercase mt-1">
@@ -214,7 +198,7 @@ export default function DashboardLayout() {
             <div className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md rounded-2xl border border-white/60 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="flex items-center gap-3 mb-3">
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-200 to-violet-200 p-[2px]">
+                  <div className="w-10 h-10 rounded-full bg-pink-100 p-[2px]">
                     <img 
                       src={user.avatar} 
                       alt={user.name} 

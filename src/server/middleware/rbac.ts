@@ -19,12 +19,12 @@ export const SCHOOL_PERMISSIONS = {
   'school:billing': ['principal'],
   
   // Staff management
-  'staff:invite': ['principal', 'vice_principal'],
+  'staff:invite': ['principal', 'vice_principal', 'dept_head'],
   'staff:remove': ['principal', 'vice_principal'],
   'staff:update_role': ['principal'],
   
   // Student management
-  'students:enroll': ['principal', 'vice_principal', 'dept_head'],
+  'students:enroll': ['principal', 'vice_principal', 'dept_head', 'teacher'],
   'students:view': ['principal', 'vice_principal', 'dept_head', 'teacher', 'teaching_assistant'],
   'students:update': ['principal', 'vice_principal'],
   

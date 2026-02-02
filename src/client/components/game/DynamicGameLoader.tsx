@@ -11,9 +11,15 @@ interface GameComponent {
 
 interface DynamicGameLoaderProps {
   components: GameComponent[];
-  onProgress: () => void;
+  onProgress: (result?: { correct?: boolean; xp?: number }) => void;
   onComplete: () => void;
   isLoading: boolean;
+  stats?: {
+    questionsAnswered: number;
+    correctAnswers: number;
+    xpEarned: number;
+    startTime: number;
+  };
 }
 
 // Component mapping
@@ -29,6 +35,7 @@ export default function DynamicGameLoader({
   onProgress,
   onComplete,
   isLoading,
+  stats,
 }: DynamicGameLoaderProps) {
   return (
     <div className="space-y-6">
@@ -49,6 +56,15 @@ export default function DynamicGameLoader({
           >
             <Component
               {...component.props}
+              // Override stats for VictoryScreen
+              {...(component.type === 'victory' && stats ? {
+                stats: {
+                    questionsAnswered: stats.questionsAnswered,
+                    accuracy: stats.questionsAnswered > 0 ? Math.round((stats.correctAnswers / stats.questionsAnswered) * 100) : 0,
+                    xpEarned: stats.xpEarned,
+                    timeSpent: Math.round((Date.now() - stats.startTime) / 60000) + 'm'
+                }
+              } : {})}
               onProgress={onProgress}
               onComplete={onComplete}
               isLoading={isLoading}

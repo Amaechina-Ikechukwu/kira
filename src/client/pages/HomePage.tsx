@@ -98,8 +98,8 @@ export default function HomePage() {
 
   const skipIntro = () => setShowTopics(true);
 
-  const handleStart = async () => {
-    const topic = selectedTopic || customTopic.trim();
+  const handleStart = async (topicOverride?: string) => {
+    const topic = topicOverride || selectedTopic || customTopic.trim();
     
     if (!topic) {
       setError('Please select or enter a topic');
@@ -133,6 +133,7 @@ export default function HomePage() {
   const selectTopic = (topic: string) => {
     setSelectedTopic(topic);
     setCustomTopic('');
+    handleStart(topic);
   };
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -157,7 +158,7 @@ export default function HomePage() {
       {isAuthenticated ? (
         <a 
           href="/dashboard" 
-          className="absolute top-6 right-6 z-50 px-4 py-2 bg-white/80 backdrop-blur-md border border-white/50 rounded-full text-violet-600 font-medium text-sm hover:bg-white hover:shadow-lg hover:shadow-violet-500/10 transition-all flex items-center gap-2"
+          className="absolute top-6 right-6 z-50 px-4 py-2 bg-white/80 backdrop-blur-md border border-white/50 rounded-full text-pink-600 font-medium text-sm hover:bg-white hover:shadow-lg hover:shadow-pink-500/10 transition-all flex items-center gap-2"
         >
           <span>Dashboard</span>
           <span className="text-lg">→</span>
@@ -165,31 +166,15 @@ export default function HomePage() {
       ) : (
         <a 
           href="/login" 
-          className="absolute top-6 right-6 z-50 text-stone-500 hover:text-violet-600 text-sm font-medium transition-colors"
+          className="absolute top-6 right-6 z-50 text-stone-500 hover:text-pink-600 text-sm font-medium transition-colors"
         >
           Sign in
         </a>
       )}
 
       {/* Animated background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(124, 58, 237, 0.04) 0%, transparent 70%)',
-          }}
-        />
-        <motion.div 
-          animate={{ rotate: -360 }}
-          transition={{ duration: 150, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-1/4 -left-1/4 w-[700px] h-[700px] rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(245, 158, 11, 0.03) 0%, transparent 70%)',
-          }}
-        />
-      </div>
+      {/* REMOVED GRADIENTS AS PER USER REQUEST */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none bg-stone-50 z-0" />
 
       <AnimatePresence mode="wait">
         {!showTopics ? (
@@ -241,7 +226,7 @@ export default function HomePage() {
                   <motion.span
                     animate={{ opacity: [1, 0] }}
                     transition={{ duration: 0.5, repeat: Infinity }}
-                    className="inline-block ml-1 text-violet-500"
+                     className="inline-block ml-1 text-pink-500"
                   >
                     |
                   </motion.span>
@@ -266,7 +251,7 @@ export default function HomePage() {
                   key={i}
                   animate={{
                     scale: i === dialogueIndex ? 1.3 : 1,
-                    backgroundColor: i <= dialogueIndex ? '#7c3aed' : '#e7e5e4',
+                    backgroundColor: i <= dialogueIndex ? '#ec4899' : '#e7e5e4',
                   }}
                   className="w-2 h-2 rounded-full"
                 />
@@ -298,7 +283,7 @@ export default function HomePage() {
                 transition={{ delay: 0.2 }}
                 className="font-display text-4xl md:text-5xl font-extrabold mb-2"
               >
-                What do you want to <span className="text-gradient">learn</span>?
+                What do you want to <span className="text-pink-600">learn</span>?
               </motion.h1>
               
               <motion.p 
@@ -328,9 +313,9 @@ export default function HomePage() {
                   }}
                   placeholder="I want to learn about..."
                   className="w-full px-5 py-4 bg-white border-2 border-stone-200 rounded-2xl text-stone-800 placeholder:text-stone-400 
-                    focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all text-lg"
+                    focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition-all text-lg"
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-violet-400" />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-pink-400" />
               </div>
             </motion.div>
 
@@ -350,22 +335,32 @@ export default function HomePage() {
                   className="space-y-2"
                 >
                   <div className="flex items-center gap-2 text-stone-600 font-medium text-sm px-1">
-                    <span className="w-4 h-4 rounded bg-violet-100 flex items-center justify-center text-violet-600 text-xs font-bold">
+                    <span className="w-4 h-4 rounded bg-pink-100 flex items-center justify-center text-pink-600 text-xs font-bold">
                       {category.title.charAt(0)}
                     </span>
                     <span>{category.title}</span>
                   </div>
                   <div className="space-y-2">
                     {category.topics.slice(0, 2).map((topic) => (
-                      <button
-                        key={topic}
-                        onClick={() => selectTopic(topic)}
-                        className={`topic-card w-full text-left text-sm ${
-                          selectedTopic === topic ? 'selected' : ''
-                        }`}
-                      >
-                        <span className="relative z-10 text-stone-700">{topic}</span>
-                      </button>
+                        <button
+                          key={topic}
+                          onClick={() => selectTopic(topic)}
+                          disabled={isLoading}
+                          className={`topic-card w-full text-left text-sm ${
+                            selectedTopic === topic ? 'selected' : ''
+                          } ${isLoading ? 'cursor-not-allowed opacity-70' : ''}`}
+                        >
+                          <span className="relative z-10 text-stone-700 flex items-center justify-between gap-2">
+                            {topic}
+                            {isLoading && selectedTopic === topic && (
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                className="w-4 h-4 border-2 border-pink-500 border-t-transparent rounded-full"
+                              />
+                            )}
+                          </span>
+                        </button>
                     ))}
                   </div>
                 </motion.div>
@@ -390,7 +385,7 @@ export default function HomePage() {
               transition={{ delay: 0.7 }}
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              onClick={handleStart}
+              onClick={() => handleStart()}
               disabled={isLoading || (!selectedTopic && !customTopic.trim())}
               className="w-full btn-primary py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -422,11 +417,11 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="mt-6 p-5 bg-gradient-to-r from-violet-50 to-amber-50 rounded-2xl border border-violet-100"
+              className="mt-6 p-5 bg-pink-50 rounded-2xl border border-pink-100"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center shrink-0">
-                  <span className="text-violet-600 font-bold text-lg">PDF</span>
+                <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center shrink-0">
+                  <span className="text-pink-600 font-bold text-lg">PDF</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-stone-800">Have a document to study?</p>
@@ -434,7 +429,7 @@ export default function HomePage() {
                 </div>
                 <a
                   href="/learnground"
-                  className="shrink-0 px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-xl hover:bg-violet-700 transition-colors"
+                  className="shrink-0 px-4 py-2 bg-pink-600 text-white text-sm font-medium rounded-xl hover:bg-pink-700 transition-colors"
                 >
                   Upload PDF
                 </a>
@@ -443,7 +438,7 @@ export default function HomePage() {
 
             {/* Footer */}
             <p className="text-center text-stone-400 text-sm mt-6">
-              Powered by <span className="text-gradient font-medium">Kira AI</span>
+              Powered by <span className="text-pink-600 font-medium">Kira AI</span>
             </p>
           </motion.div>
         )}

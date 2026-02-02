@@ -360,6 +360,40 @@ router.post('/:id/invitations', requireAuth, loadSchool(), requireSchoolPermissi
       return res.status(400).json({ error: 'Invalid role' });
     }
 
+    // --- HIERARCHY ENFORCEMENT ---
+    const inviterMembership = req.membership!; // Guaranteed by requireSchoolPermission
+    // If inviter is platform admin, they act as principal
+    const inviterRole = req.user && ['owner', 'superadmin', 'admin'].includes(req.user.platformRole) 
+        ? 'principal' 
+        : inviterMembership.role;
+
+    if (inviterRole !== 'principal' && inviterRole !== 'vice_principal') {
+        if (inviterRole === 'dept_head') {
+            // Dept Head can only invite Teachers/TAs to THEIR department
+            if (!['teacher', 'teaching_assistant'].includes(inviteRole)) {
+                return res.status(403).json({ error: 'Department Heads can only invite Teachers and Teaching Assistants.' });
+            }
+            // Enforce department match
+            if (!inviterMembership.departmentId) {
+                 // Should not happen for a valid dept head, but safety check
+                 return res.status(403).json({ error: 'You are not assigned to a department.' });
+            }
+            if (departmentId && departmentId !== inviterMembership.departmentId) {
+                return res.status(403).json({ error: 'You can only invite to your own department.' });
+            }
+            // Force department ID
+            req.body.departmentId = inviterMembership.departmentId; 
+        } else if (inviterRole === 'teacher') {
+            // Teacher can only invite Students
+            if (inviteRole !== 'student') {
+                return res.status(403).json({ error: 'Teachers can only invite Students.' });
+            }
+        } else {
+            // Students/TAs (if they somehow got permission, though RBAC blocks them)
+            return res.status(403).json({ error: 'You do not have permission to invite this role.' });
+        }
+    }
+
     // Check if user is already a member
     const existingUser = await db.query.users.findFirst({
       where: eq(schema.users.email, normalizedEmail),
@@ -389,11 +423,14 @@ router.post('/:id/invitations', requireAuth, loadSchool(), requireSchoolPermissi
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
+    // Use the enforced/validated departmentId
+    const finalDepartmentId = (inviterRole === 'dept_head') ? inviterMembership.departmentId : departmentId;
+
     const [invitation] = await db.insert(schema.schoolInvitations).values({
       schoolId,
       email: normalizedEmail,
       role: inviteRole,
-      departmentId: departmentId || null,
+      departmentId: finalDepartmentId || null,
       token,
       invitedBy: userId,
       message: message || null,

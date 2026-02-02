@@ -7,3 +7,4 @@ export * from './schools';
 export * from './meetings';
 export * from './quizzes';
 export * from './embeddings';
+export * from './admin';

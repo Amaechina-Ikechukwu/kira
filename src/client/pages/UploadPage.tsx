@@ -71,10 +71,16 @@ export default function UploadPage() {
       setFile(null); // Clear file if topic selected
       setTitle(topic);
       setError('');
+      handleGenerate(topic); // Auto-start
   };
 
-  const handleGenerate = async () => {
-    if (!file && !selectedTopic) {
+  const handleGenerate = async (topicOverride?: string) => {
+    // If a topic override is provided, use it. Otherwise fall back to state.
+    const effectiveTopic = topicOverride || selectedTopic;
+    
+    // Validation: Require either a file OR a topic (effective or title if custom)
+    // Note: title is used for custom topic input when no file is selected
+    if (!file && !effectiveTopic && !title) {
       setError('Please select a file or choose a topic');
       return;
     }
@@ -106,12 +112,21 @@ export default function UploadPage() {
             } else {
                 setError(data.error || 'Upload failed');
             }
-        } else if (selectedTopic) {
-            // New Topic Generation Logic (Mock for now, similar to HomePage)
+        } else {
+            // Topic Generation Logic
+            // Use effectiveTopic (from click) or title (from custom input)
+            const topicToUse = effectiveTopic || title;
+            
+            if (!topicToUse) {
+                 setError('Please select or enter a topic');
+                 setIsUploading(false);
+                 return;
+            }
+
              const response = await fetch('/api/lesson/explore', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic: selectedTopic, personalityTone: 'Hype Man' }),
+                body: JSON.stringify({ topic: topicToUse, personalityTone: 'Hype Man' }),
             });
 
             const data = await response.json();
@@ -119,7 +134,7 @@ export default function UploadPage() {
             if (data.sessionId) {
                 navigate(`/lesson/${data.sessionId}`);
             } else {
-                 // Fallback if full lesson generation isn't ready in this context, redirect to dashboard with mock
+                 // Fallback if full lesson generation isn't ready in this context
                  navigate('/dashboard'); 
             }
         }
@@ -144,7 +159,7 @@ export default function UploadPage() {
             <Mascot expression="happy" size="lg" />
         </motion.div>
         <h1 className="text-4xl md:text-5xl font-display font-extrabold text-stone-800 mb-2">
-            What do you want to <span className="text-gradient">learn</span>?
+            What do you want to <span className="text-pink-500">learn</span>?
         </h1>
         <p className="text-stone-500 text-lg">Pick a topic below, type your own, or upload a PDF</p>
       </div>
@@ -166,9 +181,9 @@ export default function UploadPage() {
                 }}
                 placeholder="I want to learn about..."
                 className="w-full px-6 py-5 bg-white border-2 border-stone-200 rounded-2xl text-stone-800 placeholder:text-stone-400 
-                focus:outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all text-xl font-medium shadow-sm"
+                focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition-all text-xl font-medium shadow-sm"
             />
-            <div className="absolute right-5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-violet-400" />
+            <div className="absolute right-5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-pink-400" />
           </div>
 
         {/* Topic Grid */}
@@ -182,7 +197,7 @@ export default function UploadPage() {
                 className="space-y-2"
             >
                 <div className="flex items-center gap-2 text-stone-600 font-medium text-sm px-1">
-                 <span className="w-4 h-4 rounded bg-violet-100 flex items-center justify-center text-violet-600 text-xs font-bold">
+                 <span className="w-4 h-4 rounded bg-pink-100 flex items-center justify-center text-pink-600 text-xs font-bold">
                     {category.title.charAt(0)}
                 </span>
                 <span>{category.title}</span>
@@ -192,11 +207,21 @@ export default function UploadPage() {
                     <button
                         key={topic}
                         onClick={() => handleTopicSelect(topic)}
+                        disabled={isUploading}
                         className={`topic-card w-full text-left text-sm ${
                             selectedTopic === topic ? 'selected' : ''
-                        }`}
+                        } ${isUploading ? 'cursor-not-allowed opacity-70' : ''}`}
                     >
-                    <span className="relative z-10 text-stone-700">{topic}</span>
+                    <span className="relative z-10 text-stone-700 flex items-center justify-between gap-2">
+                        {topic}
+                        {isUploading && selectedTopic === topic && (
+                            <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            className="w-4 h-4 border-2 border-pink-500 border-t-transparent rounded-full"
+                            />
+                        )}
+                    </span>
                     </button>
                 ))}
                 </div>
@@ -220,8 +245,8 @@ export default function UploadPage() {
             className={`
                 relative z-10 border-3 border-dashed rounded-2xl p-8 text-center transition-all duration-300 cursor-pointer group
                 ${isDragging 
-                    ? 'border-violet-500 bg-violet-50/50 scale-[1.01]' 
-                    : 'border-stone-200 hover:border-violet-400 hover:bg-stone-50/50'}
+                    ? 'border-pink-500 bg-pink-50/50 scale-[1.01]' 
+                    : 'border-stone-200 hover:border-pink-400 hover:bg-stone-50/50'}
                 ${file ? 'border-green-400 bg-green-50/30' : ''}
             `}
             onClick={() => document.getElementById('file-input')?.click()}
@@ -250,8 +275,8 @@ export default function UploadPage() {
                 </motion.div>
             ) : (
                 <div className="flex items-center justify-center gap-6">
-                    <div className="w-16 h-16 bg-violet-50 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                        <svg className="w-8 h-8 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                    <div className="w-16 h-16 bg-pink-50 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                        <svg className="w-8 h-8 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                     </div>
                     <div className="text-left">
                         <p className="font-display font-bold text-xl text-stone-700 mb-1">Upload a PDF</p>
@@ -276,7 +301,7 @@ export default function UploadPage() {
         {/* Main Action Button */}
         <motion.button
           layout
-          onClick={handleGenerate}
+          onClick={() => handleGenerate()}
           disabled={(!file && !selectedTopic && !title) || isUploading}
           className="w-full btn-primary py-4 text-lg shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:opacity-50 disabled:shadow-none"
         >

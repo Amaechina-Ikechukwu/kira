@@ -9,7 +9,7 @@ interface BossBattleProps {
   correctAnswer: string;
   hint?: string;
   xpReward: number;
-  onProgress: () => void;
+  onProgress: (result?: { correct?: boolean; xp?: number }) => void;
   isLoading: boolean;
 }
 
@@ -57,10 +57,8 @@ export default function BossBattle({
       className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
     >
       {/* Quiz Header */}
-      <div className="relative bg-gradient-to-r from-indigo-500 to-purple-500 p-6 border-b border-slate-200">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-        </div>
+        <div className="relative bg-pink-600 p-6 border-b border-slate-200">
+         {/* Removed shiny effects */}
 
         <div className="relative z-10 text-center">
           <motion.div
@@ -85,10 +83,10 @@ export default function BossBattle({
                 transition={{ duration: 0.5 }}
                 className={`h-full rounded-full ${
                   healthPercentage > 50
-                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-300'
+                    ? 'bg-emerald-400'
                     : healthPercentage > 25
-                    ? 'bg-gradient-to-r from-amber-400 to-orange-400'
-                    : 'bg-gradient-to-r from-red-400 to-red-300'
+                    ? 'bg-yellow-400'
+                    : 'bg-red-400'
                 }`}
               />
             </div>
@@ -108,7 +106,7 @@ export default function BossBattle({
             >
               {/* Question */}
               <div className="text-center mb-6">
-                <span className="text-sm text-blue-600 font-medium uppercase tracking-wider">
+                <span className="text-sm text-pink-600 font-medium uppercase tracking-wider">
                   📝 Question
                 </span>
                 <h2 className="text-xl md:text-2xl font-bold text-slate-800 mt-2">{question}</h2>
@@ -121,7 +119,7 @@ export default function BossBattle({
                   const isCorrectAnswer = option === correctAnswer;
                   const showResult = selectedAnswer !== null;
 
-                  let buttonClass = 'bg-slate-50 border-slate-200 hover:border-blue-400 hover:bg-blue-50';
+                  let buttonClass = 'bg-slate-50 border-slate-200 hover:border-pink-400 hover:bg-pink-50';
 
                   if (showResult) {
                     if (isCorrectAnswer) {
@@ -162,7 +160,7 @@ export default function BossBattle({
                 <div className="mt-4 text-center">
                   <button
                     onClick={() => setShowHint(!showHint)}
-                    className="text-sm text-slate-500 hover:text-blue-600 transition-colors"
+                    className="text-sm text-slate-500 hover:text-pink-600 transition-colors"
                   >
                     {showHint ? 'Hide hint' : '💡 Need a hint?'}
                   </button>
@@ -172,7 +170,7 @@ export default function BossBattle({
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="mt-2 text-sm text-blue-600 italic"
+                        className="mt-2 text-sm text-pink-600 italic"
                       >
                         {hint}
                       </motion.p>
@@ -192,7 +190,7 @@ export default function BossBattle({
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={onProgress}
+                    onClick={() => onProgress({ correct: false, xp: 0 })}
                     className="mt-4 px-6 py-2 btn-secondary"
                   >
                     Continue →
@@ -217,12 +215,12 @@ export default function BossBattle({
               </motion.span>
               <h2 className="text-2xl font-bold text-emerald-600 mb-2">Correct!</h2>
               <p className="text-slate-500 mb-2">You earned</p>
-              <p className="text-3xl font-bold text-blue-600">+{xpReward} XP</p>
+              <p className="text-3xl font-bold text-pink-600">+{xpReward} XP</p>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={onProgress}
+                onClick={() => onProgress({ correct: true, xp: xpReward })}
                 disabled={isLoading}
                 className="mt-8 btn-primary px-8 py-4 text-lg"
               >
