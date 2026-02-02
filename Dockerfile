@@ -22,4 +22,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Start the server
-CMD ["bun", "run", "src/server/index.ts"]
+CMD ["sh", "-c", "bun run db:push && bun run src/server/index.ts"]
