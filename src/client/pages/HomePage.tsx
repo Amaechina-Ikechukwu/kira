@@ -135,15 +135,41 @@ export default function HomePage() {
     setCustomTopic('');
   };
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/auth/status');
+      const data = await res.json();
+      setIsAuthenticated(data.authenticated);
+    } catch (err) {
+      console.error('Failed to check auth', err);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-hero overflow-hidden relative">
-      {/* Login link - top right */}
-      <a 
-        href="/login" 
-        className="absolute top-6 right-6 z-50 text-stone-500 hover:text-violet-600 text-sm font-medium transition-colors"
-      >
-        Sign in
-      </a>
+      {/* Login/Dashboard link - top right */}
+      {isAuthenticated ? (
+        <a 
+          href="/dashboard" 
+          className="absolute top-6 right-6 z-50 px-4 py-2 bg-white/80 backdrop-blur-md border border-white/50 rounded-full text-violet-600 font-medium text-sm hover:bg-white hover:shadow-lg hover:shadow-violet-500/10 transition-all flex items-center gap-2"
+        >
+          <span>Dashboard</span>
+          <span className="text-lg">→</span>
+        </a>
+      ) : (
+        <a 
+          href="/login" 
+          className="absolute top-6 right-6 z-50 text-stone-500 hover:text-violet-600 text-sm font-medium transition-colors"
+        >
+          Sign in
+        </a>
+      )}
 
       {/* Animated background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -407,7 +433,7 @@ export default function HomePage() {
                   <p className="text-sm text-stone-500">Upload a PDF and I'll create a lesson from it</p>
                 </div>
                 <a
-                  href="/login"
+                  href="/learnground"
                   className="shrink-0 px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-xl hover:bg-violet-700 transition-colors"
                 >
                   Upload PDF

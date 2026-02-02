@@ -5,6 +5,7 @@ An AI-powered learning companion that creates personalized lessons from quiz res
 ## Features
 
 - 🤖 **AI-Generated Lessons** - Uses Gemini to create personalized teaching content
+- 🔐 **Google Authentication** - Secure user sign-in via Google OAuth
 - 🌐 **Topic Exploration** - Instant AI lessons for any topic via public landing page demo
 - 📄 **Document Support** - Extracts knowledge from PDF files to supplement lessons
 - 📧 **Email Integration** - Sends lesson invites via email
@@ -14,9 +15,10 @@ An AI-powered learning companion that creates personalized lessons from quiz res
 ## Tech Stack
 
 - **Backend**: Bun + Express + TypeScript + Drizzle ORM
-- **Frontend**: React + Vite + Tailwind CSS + Framer Motion
+- **Frontend**: React + Vite + Tailwind CSS + Framer Motion + Lucide Icons
 - **AI**: Google Gemini API
 - **Storage**: PostgreSQL (Cloud SQL) + Cloudinary (Media)
+- **Testing**: Vitest
 
 ## Quick Start
 
@@ -34,11 +36,17 @@ bun x drizzle-kit push
 # Run development server
 bun run dev
 
+# Run tests
+bun run test
+
 ## Environment Variables
 
 | Variable | Description |
 |----------|-------------|
 | `GEMINI_API_KEY` | Google Gemini API key |
+| `GOOGLE_OAUTH_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth client secret |
+| `GOOGLE_OAUTH_REDIRECT_URI` | Google OAuth redirect callback URL |
 | `GOOGLE_SHEETS_ID` | Google Sheet ID with quiz responses |
 | `GOOGLE_SERVICE_ACCOUNT_PATH` | Path to service account JSON |
 | `POSTGRES_HOST` | PostgreSQL host address |
@@ -69,6 +77,7 @@ bun run dev
 - `POST /api/lesson/start` - Start a lesson session (Auth required)
 - `GET /api/lesson/:sessionId` - Get lesson data (Auth required)
 - `POST /api/lesson/:sessionId/progress` - Update progress (Auth required)
+- `GET /api/auth/google/callback` - Google OAuth authentication callback
 
 ## License
 

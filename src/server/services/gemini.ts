@@ -7,9 +7,11 @@ const genAI = new GoogleGenAI({
 });
 
 // Lesson schema - teaches concepts WITHOUT revealing answers, then quizzes
-const LessonPageSchema = {
+export const LessonPageSchema = {
   type: Type.OBJECT,
   properties: {
+// ...
+// ...
     title: {
       type: Type.STRING,
       description: 'Main title for the lesson page',
@@ -206,7 +208,7 @@ If ALL answers are correct, create a congratulatory lesson with advanced challen
 /**
  * Convert LessonPage to GameStage array
  */
-function buildStagesFromLessonPage(lessonPage: LessonPage, _personalityTone: string): GameStage[] {
+export function buildStagesFromLessonPage(lessonPage: LessonPage, _personalityTone: string): GameStage[] {
   const stages: GameStage[] = [];
   const totalTeaching = lessonPage.sections.length;
   const totalQuiz = lessonPage.quizQuestions.length;

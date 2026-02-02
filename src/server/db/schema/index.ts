@@ -2,4 +2,8 @@ export * from './users';
 export * from './documents';
 export * from './lessons';
 export * from './sessions';
-
+export * from './auth';
+export * from './schools';
+export * from './meetings';
+export * from './quizzes';
+export * from './embeddings';

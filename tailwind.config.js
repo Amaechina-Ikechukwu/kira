@@ -8,6 +8,7 @@ export default {
     extend: {
       colors: {
         // Dark gamer aesthetic - neon purples and blues
+        primary: '#ec4899', // Pink as primary accent
         'neon': {
           purple: '#a855f7',
           'purple-bright': '#c084fc',

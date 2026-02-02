@@ -6,6 +6,8 @@ import { db, schema } from '../db';
 import { uploadToCloudinary, deleteFromCloudinary } from '../services/cloudinary';
 import { extractTextFromPdf } from '../services/pdf';
 import { generateExploratoryLesson } from '../services/gemini';
+import { processDocumentEmbeddings } from '../services/embeddings';
+import { generateLessonFromDocumentWithRAG } from '../services/rag-lesson';
 import { requireAuth } from './auth';
 import { setSession } from '../stores/sessionStore';
 
@@ -15,7 +17,7 @@ const router = Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 20 * 1024 * 1024, // 20MB limit
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['application/pdf'];
@@ -71,6 +73,11 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
       extractedText: extractedText.substring(0, 100000), // Limit text size
     }).returning();
 
+    // Generate embeddings in background (don't partial await to speed up response)
+    processDocumentEmbeddings(document.id).catch(err => {
+      console.error('[Documents] Background embedding generation failed:', err);
+    });
+
     res.json({
       id: document.id,
       title: document.title,
@@ -86,6 +93,33 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
       error: 'Failed to upload document',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
+  }
+});
+
+/**
+ * Process document embeddings (manual trigger)
+ */
+router.post('/:id/process', async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const documentId = req.params.id as string;
+
+    const doc = await db.query.documents.findFirst({
+      where: eq(schema.documents.id, documentId),
+    });
+
+    if (!doc || doc.userId !== userId) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    // Trigger processing
+    await processDocumentEmbeddings(documentId);
+
+    res.json({ message: 'Document processed successfully' });
+
+  } catch (error) {
+    console.error('[Documents] Processing error:', error);
+    res.status(500).json({ error: 'Failed to process document' });
   }
 });
 
@@ -170,11 +204,9 @@ router.post('/:id/lesson', async (req: Request, res: Response) => {
 
     console.log(`[Documents] Generating lesson from "${doc.title}" for user ${userId}`);
 
-    // Use extracted text as topic context
-    const topicSummary = `Based on this document "${doc.title}":\n\n${doc.extractedText.substring(0, 5000)}`;
+    // Generate lesson using RAG (Retrieval Augmented Generation)
+    const { lessonPlan } = await generateLessonFromDocumentWithRAG(doc.id, personalityTone);
     
-    const { lessonPlan } = await generateExploratoryLesson(topicSummary, personalityTone);
-
     // Create session ID and store in memory (so LessonPage can access it)
     const sessionId = uuidv4();
     setSession(sessionId, {

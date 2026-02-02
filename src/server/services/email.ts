@@ -237,3 +237,230 @@ export async function sendMagicLinkEmail(email: string, magicLink: string): Prom
   }
 }
 
+interface MeetingInviteOptions {
+  to: string;
+  recipientName?: string;
+  meetingTitle: string;
+  hostName: string;
+  scheduledStart: Date;
+  scheduledEnd: Date;
+  meetLink?: string | null;
+  description?: string | null;
+}
+
+export async function sendMeetingInviteEmail(options: MeetingInviteOptions): Promise<boolean> {
+  const { to, recipientName, meetingTitle, hostName, scheduledStart, scheduledEnd, meetLink, description } = options;
+  
+  const dateStr = scheduledStart.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const timeStr = `${scheduledStart.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} - ${scheduledEnd.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background-color: #f9fafb; color: #111827; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; }
+    .header { background: #ffffff; padding: 32px; border-bottom: 1px solid #f3f4f6; }
+    .logo { font-size: 24px; font-weight: 800; color: #111827; }
+    .content { padding: 32px; }
+    .h1 { font-size: 24px; font-weight: 700; margin-bottom: 16px; color: #111827; }
+    .detail-row { display: flex; margin-bottom: 12px; }
+    .label { width: 100px; color: #6b7280; font-weight: 500; font-size: 14px; }
+    .value { color: #111827; font-weight: 600; font-size: 14px; }
+    .btn { display: inline-block; background: #111827; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 24px; }
+    .description { background: #f9fafb; padding: 16px; border-radius: 8px; margin-top: 24px; color: #4b5563; font-size: 14px; line-height: 1.5; }
+    .footer { padding: 24px; text-align: center; color: #9ca3af; font-size: 12px; border-top: 1px solid #e5e7eb; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">Kira</div>
+    </div>
+    <div class="content">
+      <div class="h1">Meeting Invitation</div>
+      <p style="color: #4b5563; margin-bottom: 24px;">Hi ${recipientName || 'there'},<br>You have been invited to a meeting by <strong>${hostName}</strong>.</p>
+      
+      <div class="detail-row"><span class="label">Topic</span><span class="value">${meetingTitle}</span></div>
+      <div class="detail-row"><span class="label">Date</span><span class="value">${dateStr}</span></div>
+      <div class="detail-row"><span class="label">Time</span><span class="value">${timeStr}</span></div>
+      
+      ${description ? `<div class="description">${description}</div>` : ''}
+      
+      ${meetLink ? `<a href="${meetLink}" class="btn">Join Meeting</a>` : ''}
+      
+      ${!meetLink ? `<div style="margin-top:24px; padding:12px; background:#f3f4f6; border-radius:8px; text-align:center; font-size:14px; color:#6b7280;">No video link provided. Check with host for details.</div>` : ''}
+    </div>
+    <div class="footer">
+      Powered by Kira
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"Kira" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: `Invitation: ${meetingTitle}`,
+      html: htmlContent,
+    });
+    console.log(`[Email] Sent meeting invite to ${to}`);
+    return true;
+  } catch (error) {
+    console.error('[Email] Failed to send meeting invite:', error);
+    return false;
+  }
+}
+
+interface MeetingSummaryOptions {
+  to: string;
+  recipientName?: string;
+  meetingTitle: string;
+  durationMinutes: number;
+  participantsCount: number;
+  nextSteps?: string;
+}
+
+export async function sendMeetingSummaryEmail(options: MeetingSummaryOptions): Promise<boolean> {
+  const { to, recipientName, meetingTitle, durationMinutes, participantsCount } = options;
+  
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background-color: #f9fafb; color: #111827; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; }
+    .header { background: #ffffff; padding: 32px; border-bottom: 1px solid #f3f4f6; }
+    .logo { font-size: 24px; font-weight: 800; color: #111827; }
+    .content { padding: 32px; }
+    .h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; color: #111827; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+    .stat-card { background: #f9fafb; padding: 16px; border-radius: 12px; text-align: center; }
+    .stat-value { font-size: 24px; font-weight: 800; color: #7c3aed; }
+    .stat-label { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    .footer { padding: 24px; text-align: center; color: #9ca3af; font-size: 12px; border-top: 1px solid #e5e7eb; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">Kira</div>
+    </div>
+    <div class="content">
+      <div class="h1">Meeting Summary</div>
+      <p style="color: #4b5563;font-size:16px;">${meetingTitle} has ended.</p>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">${durationMinutes}m</div>
+          <div class="stat-label">Duration</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${participantsCount}</div>
+          <div class="stat-label">Participants</div>
+        </div>
+      </div>
+      
+      <p style="color: #6b7280; font-size: 14px; text-align: center;">Thanks for attending!</p>
+    </div>
+    <div class="footer">
+      Powered by Kira
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"Kira" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: `Summary: ${meetingTitle}`,
+      html: htmlContent,
+    });
+    console.log(`[Email] Sent meeting summary to ${to}`);
+    return true;
+  } catch (error) {
+    console.error('[Email] Failed to send meeting summary:', error);
+    return false;
+  }
+}
+
+interface ReviewSessionOptions {
+  to: string;
+  recipientName?: string;
+  quizTitle: string;
+  weakAreas: string[];
+  reviewUrl: string;
+}
+
+export async function sendReviewSessionAssignedEmail(options: ReviewSessionOptions): Promise<boolean> {
+  const { to, recipientName, quizTitle, weakAreas, reviewUrl } = options;
+  
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background-color: #fff1f2; color: #111827; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #fecdd3; box-shadow: 0 4px 6px -1px rgba(244, 63, 94, 0.1); }
+    .header { background: #fff1f2; padding: 32px; border-bottom: 1px solid #fecdd3; } /* Rose-50 background */
+    .logo { font-size: 24px; font-weight: 800; color: #be123c; } /* Rose-700 */
+    .content { padding: 32px; }
+    .h1 { font-size: 24px; font-weight: 700; margin-bottom: 16px; color: #9f1239; }
+    .text { color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px; }
+    .tag-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+    .tag { background: #ffe4e6; color: #be123c; padding: 6px 12px; border-radius: 100px; font-size: 13px; font-weight: 600; }
+    .btn { display: inline-block; background: #be123c; color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: 600; transition: background 0.2s; box-shadow: 0 4px 12px rgba(190, 18, 60, 0.2); }
+    .btn:hover { background: #9f1239; }
+    .footer { padding: 24px; text-align: center; color: #9ca3af; font-size: 12px; border-top: 1px solid #e5e7eb; background: #fafafa; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">Kira</div>
+    </div>
+    <div class="content">
+      <div class="h1">Let's turn that around.</div>
+      <p class="text">Hi ${recipientName || 'Scholar'},<br>We noticed you struggled a bit with <strong>${quizTitle}</strong>. That's part of learning.</p>
+      
+      <p class="text" style="font-weight: 600; margin-bottom: 12px;">We've created a custom review session focusing on:</p>
+      <div class="tag-container">
+        ${weakAreas.map(area => `<span class="tag">${area}</span>`).join('')}
+      </div>
+      
+      <div style="text-align: center;">
+        <a href="${reviewUrl}" class="btn">Start Review Session</a>
+      </div>
+    </div>
+    <div class="footer">
+      You got this. Powered by Kira.
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"Kira 🛡️" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: `Action Plan: Review for ${quizTitle}`,
+      html: htmlContent,
+    });
+    console.log(`[Email] Sent review session assignment to ${to}`);
+    return true;
+  } catch (error) {
+    console.error('[Email] Failed to send review session assignment:', error);
+    return false;
+  }
+}
+

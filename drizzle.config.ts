@@ -4,15 +4,13 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export default {
-  schema: './src/server/db/schema/*',
+  schema: './src/server/db/schema/index.ts',
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {
-    host: process.env.POSTGRES_HOST!,
-    port: parseInt(process.env.POSTGRES_PORT || '5432'),
-    user: process.env.POSTGRES_USER!,
-    password: process.env.POSTGRES_PASSWORD!,
-    database: process.env.POSTGRES_DATABASE!,
-    ssl: 'require',
+    url: process.env.DATABASE_URL!,
   },
+  // schemes using 'pg' driver
+  // dialect: 'postgresql', // This is already present in the file, keeping context implies I just replace the credentials block
+
 } satisfies Config;
