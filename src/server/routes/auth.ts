@@ -357,9 +357,9 @@ router.get('/me', async (req: Request, res: Response) => {
     }
 
     // Get user's primary school if any
-    const membership = await db.query.schoolMembers.findFirst({
-      where: eq(schema.schoolMembers.userId, user.id),
-      orderBy: (members, { desc }) => [desc(members.createdAt)],
+    const membership = await db.query.schoolMemberships.findFirst({
+      where: eq(schema.schoolMemberships.userId, user.id),
+      orderBy: (members, { desc }) => [desc(members.enrolledAt)],
     });
 
     res.json({
