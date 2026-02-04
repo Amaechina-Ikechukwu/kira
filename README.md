@@ -49,7 +49,7 @@ bun run test
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth client secret |
 | `GOOGLE_OAUTH_REDIRECT_URI` | Google OAuth redirect callback URL |
 | `GOOGLE_SHEETS_ID` | Google Sheet ID with quiz responses |
-| `GOOGLE_SERVICE_ACCOUNT_PATH` | Path to service account JSON |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | Content of service account JSON |
 | `POSTGRES_HOST` | PostgreSQL host address |
 | `POSTGRES_USER` | PostgreSQL username |
 | `POSTGRES_PASSWORD` | PostgreSQL password |
