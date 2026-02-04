@@ -64,6 +64,32 @@ describe('sheets service configuration', () => {
             }),
             scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
         }));
-        console.log('VERIFICATION_SUCCESS');
+    });
+
+    it('should handle escaped newlines in private_key', async () => {
+        const mockCredentials = {
+            client_email: 'test@example.com',
+            private_key: '-----BEGIN PRIVATE KEY-----\\nFAKE_KEY\\n-----END PRIVATE KEY-----', // Escaped newlines
+            project_id: 'test-project'
+        };
+
+        process.env.GOOGLE_SERVICE_ACCOUNT_JSON = JSON.stringify(mockCredentials);
+        process.env.GOOGLE_SHEETS_ID = 'test-sheet-id';
+
+        try {
+            await getStudentQuizData('student@example.com');
+        } catch (error) {
+            // expected
+        }
+
+        // Verify that the private key passed to GoogleAuth has actual newlines
+        const expectedPrivateKey = '-----BEGIN PRIVATE KEY-----\nFAKE_KEY\n-----END PRIVATE KEY-----';
+        
+        expect(google.auth.GoogleAuth).toHaveBeenCalledWith(expect.objectContaining({
+            credentials: expect.objectContaining({
+                private_key: expectedPrivateKey
+            })
+        }));
+        console.log('NEWLINE_FIX_VERIFIED');
     });
 });

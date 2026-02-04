@@ -58,6 +58,12 @@ export async function getStudentQuizData(email: string): Promise<StudentQuizData
     if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
       // Cloud Run / Local: Parse JSON from environment variable
       const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+      
+      // Fix for "NO_START_LINE" error: ensuring private key has correct newlines
+      if (credentials.private_key) {
+        credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+      }
+      
       authOptions.credentials = credentials;
     } else {
       throw new Error('No Google credentials configured. Set GOOGLE_SERVICE_ACCOUNT_JSON');
